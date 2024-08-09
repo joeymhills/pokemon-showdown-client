@@ -47,6 +47,7 @@
 
 			// misc
 			'click input[name=teamprivacy]': 'privacyChange',
+			'click button.rulesetbutton': 'showRulesetBox',
 
 			// details
 			'change .detailsform input': 'detailsChange',
@@ -1222,7 +1223,9 @@
 					buf += '<li class="format-select">';
 					buf += '<label class="label">Format:</label><button class="select formatselect teambuilderformatselect" name="format" value="' + this.curTeam.format + '">' + (isGenericFormat(this.curTeam.format) ? '<em>Select a format</em>' : BattleLog.escapeFormat(this.curTeam.format)) + '</button>';
 					var btnClass = 'button' + (!this.curSetList.length || app.isDisconnected ? ' disabled' : '');
-					buf += ' <button name="validate" class="' + btnClass + '"><i class="fa fa-check"></i> Validate</button></li>';
+					buf += ' <input class="textbox customrule" style="display: none;" type="text" size="30" value="" placeholder="Ex: +Genesect, -Absol" />';
+					buf += ' <button name="validate" class="' + btnClass + '"><i class="fa fa-check"></i> Validate</button>';
+					buf += ' <button name="showRulesetBox" class="button rulesetbutton">Add Custom Rules</button></li>';
 				}
 				if (!this.curSetList.length) {
 					buf += '<li><em>you have no pokemon lol</em></li>';
@@ -1565,9 +1568,22 @@
 			if (window.BattleFormats && BattleFormats[format] && BattleFormats[format].battleFormat) {
 				format = BattleFormats[format].battleFormat;
 			}
+
+			if (this.$('input.customrule').val() != '') {
+				app.sendTeam(this.curTeam, function () {
+					app.send('/vtm ' + format + ' @@@ ' + ruleCode);
+				});
+				return;
+			}
+
 			app.sendTeam(this.curTeam, function () {
 				app.send('/vtm ' + format);
 			});
+		},
+		showRulesetBox: function (e) {
+			$(e.currentTarget).hide();
+			this.$('.customrulebutton').hide();
+			this.$('.customrule').show();
 		},
 		teamNameChange: function (e) {
 			var name = ($.trim(e.currentTarget.value) || 'Untitled ' + (this.curTeamLoc + 1));
